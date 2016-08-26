@@ -21,17 +21,15 @@ namespace HexSphere
             this.meshFilter = this.GetComponent<MeshFilter>();
             this.meshFilter.mesh = mesh;
 
-            this.vertices = new Vector3[6];
+            HexVertices hex = HexVertices.Create(Vector3.zero, this.edgeLength);
+
+            this.vertices = new Vector3[hex.Length];
             this.triangles = new int[12];
             this.texCoords = new Vector2[6];
-
-            Vector3 offset = new Vector3(0f, 0f, this.edgeLength);
-
-            Quaternion rotation = Quaternion.AngleAxis(60f, Vector3.up);
+            
             for (int vertexIdx = 0; vertexIdx < this.vertices.Length; vertexIdx++)
             {
-                this.vertices[vertexIdx] = offset;
-                offset = rotation * offset;
+                this.vertices[vertexIdx] = hex[vertexIdx];
 
                 // TODO: assign sane texture coordinates.
                 this.texCoords[vertexIdx] = Vector2.zero;
