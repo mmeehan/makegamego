@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System;
 
-namespace HexSphere
+namespace Generations
 {
     public struct HexSphereCoordinate
     {

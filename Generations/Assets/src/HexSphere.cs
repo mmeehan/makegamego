@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace HexSphere
+namespace Generations
 {
     [RequireComponent(typeof(HexGridMesh))]
     public class HexSphere : MonoBehaviour
@@ -15,6 +15,11 @@ namespace HexSphere
         //private int layersPerHemisphere = 1;
 
         public void Awake()
+        {
+            this.RebuildGrid();
+        }
+
+        public void RebuildGrid()
         {
             float sphereRadius = this.edgeLength * 3; // TODO: compute this.
             

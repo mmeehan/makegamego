@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace HexSphere
+namespace Generations
 {
     [RequireComponent(typeof(HexGridMesh))]
     public class HexCircle : MonoBehaviour
