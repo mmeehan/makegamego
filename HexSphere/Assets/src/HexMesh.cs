@@ -21,7 +21,7 @@ namespace HexSphere
             this.meshFilter = this.GetComponent<MeshFilter>();
             this.meshFilter.mesh = mesh;
 
-            HexVertices hex = HexVertices.Create(Vector3.zero, this.edgeLength);
+            HexCorners hex = HexCorners.Create(Vector3.zero, Vector3.up, this.edgeLength);
 
             this.vertices = new Vector3[hex.Length];
             this.triangles = new int[12];
