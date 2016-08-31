@@ -85,6 +85,7 @@ ipch/
 *.opensdf
 *.sdf
 *.cachefile
+*.vc.db
 
 # Visual Studio profiler
 *.psess
@@ -305,3 +306,9 @@ tmp
 # excel temp files
 ~$*.xlsx
 ~$*.xlsx.meta
+
+
+#unreal
+Unreal/*/Intermediate/**
+Unreal/*/Binaries/**
+Unreal/*/Saved/**
