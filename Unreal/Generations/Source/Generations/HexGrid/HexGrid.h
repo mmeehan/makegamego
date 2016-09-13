@@ -16,7 +16,7 @@ public:
 	virtual void BeginPlay() override;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, Category=Hexes)
+	UPROPERTY(EditDefaultsOnly, Category = Hexes)
 	class TSubclassOf<class AHexTile> TileActorClass;
 
 	UPROPERTY(EditDefaultsOnly, Category = Hexes)

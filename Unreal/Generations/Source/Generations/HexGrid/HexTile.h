@@ -16,9 +16,19 @@ public:
 	virtual void BeginPlay() override;
 
 protected:
-	UPROPERTY(BlueprintReadonly, Category=HexGrid)
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = Hexes)
+	class USceneComponent* root;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = Hexes)
 	class UCustomMeshComponent* mesh;
 
-	UFUNCTION(BlueprintImplementableEvent, Category=HexGrid)
-	class UMaterialInterface* GetMaterialFromBlueprint();
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = Hexes)
+	class UCustomMeshComponent* edgeMesh;
+
+	UPROPERTY(EditDefaultsOnly, Category = Hexes)
+	struct FVector TileScale;
+
+private:
+	void AddSideTriangles(class TArray<struct FCustomMeshTriangle>& triangles, const FVector& corner1, const FVector& corner2);
+	void AddEdgeTriangles(class TArray<struct FCustomMeshTriangle>& triangles, const FVector& center, const FVector& corner1, const FVector& corner2);
 };

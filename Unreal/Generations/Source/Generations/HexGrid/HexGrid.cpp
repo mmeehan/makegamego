@@ -56,8 +56,6 @@ void AHexGrid::BeginPlay()
 			}
 
 			tiles.Add(tile);
-
-			tile->SetActorScale3D(TileScale);
 		}
 	}
 }

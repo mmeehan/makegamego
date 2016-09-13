@@ -12,8 +12,11 @@ UCLASS()
 class GENERATIONS_API AGenerationsGameMode : public AGameMode
 {
 	GENERATED_BODY()
-	
-	
-	
-	
+
+public:
+	virtual void BeginPlay() override;
+
+protected:
+	UPROPERTY(EditDefaultsOnly, Category=Hexes)
+	class TSubclassOf<class AHexGrid> HexGridClass;	
 };
