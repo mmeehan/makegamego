@@ -11,8 +11,7 @@ class GENERATIONS_API AHexTile : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
-	AHexTile();
+	AHexTile(const class FObjectInitializer& ObjectInitializer);
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -20,6 +19,10 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
-	
-	
+protected:
+	UPROPERTY(BlueprintReadonly, Category=HexTile)
+	class UCustomMeshComponent* mesh;
+
+	UFUNCTION(BlueprintImplementableEvent, Category=HexTile)
+	class UMaterialInterface* GetMaterialFromBlueprint();
 };

@@ -2,21 +2,45 @@
 
 #include "Generations.h"
 #include "HexTile.h"
+#include "CustomMeshComponent.h"
 
-
-// Sets default values
-AHexTile::AHexTile()
+AHexTile::AHexTile(const class FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	//PrimaryActorTick.bCanEverTick = true;
 
+	mesh = ObjectInitializer.CreateDefaultSubobject<UCustomMeshComponent>(this, TEXT("GeneratedMesh"));
+
+	// Hardcoded math for a y-axis aligned regular hexagon's corners
+	const float xOffsetSides = FMath::Sqrt(3.f) * 0.5f;
+	const FVector North(0, 1, 0);
+	const FVector NorthEast(xOffsetSides, .5f, 0);
+	const FVector SouthEast(xOffsetSides, -.5f, 0);
+	const FVector South(0, -1, 0);
+	const FVector SouthWest(-xOffsetSides, -.5f, 0);
+	const FVector NorthWest(-xOffsetSides, .5f, 0);
+
+	TArray<FCustomMeshTriangle> triangles;
+	triangles.Add(FCustomMeshTriangle{ North, NorthEast, SouthEast });
+	triangles.Add(FCustomMeshTriangle{ North, SouthEast, South });
+	triangles.Add(FCustomMeshTriangle{ North, South, SouthWest });
+	triangles.Add(FCustomMeshTriangle{ North, SouthWest, NorthWest });
+	
+	mesh->SetCustomMeshTriangles(triangles);
+
+    UMaterialInterface* material = GetMaterialFromBlueprint();
+	if (IsValid(material))
+	{
+		mesh->SetMaterial(0, material);
+	}
+
+	FinishAndRegisterComponent(mesh);
 }
 
 // Called when the game starts or when spawned
 void AHexTile::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 // Called every frame
