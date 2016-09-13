@@ -13,16 +13,12 @@ class GENERATIONS_API AHexTile : public AActor
 public:	
 	AHexTile(const class FObjectInitializer& ObjectInitializer);
 
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	
-	// Called every frame
-	virtual void Tick( float DeltaSeconds ) override;
 
 protected:
-	UPROPERTY(BlueprintReadonly, Category=HexTile)
+	UPROPERTY(BlueprintReadonly, Category=HexGrid)
 	class UCustomMeshComponent* mesh;
 
-	UFUNCTION(BlueprintImplementableEvent, Category=HexTile)
+	UFUNCTION(BlueprintImplementableEvent, Category=HexGrid)
 	class UMaterialInterface* GetMaterialFromBlueprint();
 };

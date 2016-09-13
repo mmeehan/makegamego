@@ -28,25 +28,18 @@ AHexTile::AHexTile(const class FObjectInitializer& ObjectInitializer)
 	
 	mesh->SetCustomMeshTriangles(triangles);
 
-    UMaterialInterface* material = GetMaterialFromBlueprint();
+	FinishAndRegisterComponent(mesh);
+
+	RootComponent = mesh;
+}
+
+void AHexTile::BeginPlay()
+{
+	Super::BeginPlay();
+
+	UMaterialInterface* material = GetMaterialFromBlueprint();
 	if (IsValid(material))
 	{
 		mesh->SetMaterial(0, material);
 	}
-
-	FinishAndRegisterComponent(mesh);
 }
-
-// Called when the game starts or when spawned
-void AHexTile::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-// Called every frame
-void AHexTile::Tick( float DeltaTime )
-{
-	Super::Tick( DeltaTime );
-
-}
-
