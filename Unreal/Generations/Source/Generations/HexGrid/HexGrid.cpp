@@ -28,7 +28,15 @@ void AHexGrid::BeginPlay()
 	spawnParameters.Owner = this;
 
 	const float sqrtOfThree = FMath::Sqrt(3.f);
-	
+	float* heights = new float[GridRadius * GridRadius];
+	for (int32 q = -GridRadius; q <= GridRadius; q++)
+	{
+		for (int32 r = -GridRadius; r <= GridRadius; r++)
+		{
+			heights[q * GridRadius + r] = FMath::FRandRange(0.6f, 1.2f);
+		}
+	}
+
 	for (int32 q = -GridRadius; q <= GridRadius; q++)
 	{
 		for (int32 r = -GridRadius; r <= GridRadius; r++)
@@ -55,8 +63,26 @@ void AHexGrid::BeginPlay()
 				continue;
 			}
 
+			const float centerHeight = heights[q * GridRadius + r];
+			const float northEastNeighborHeight = (q + 1 >= GridRadius || r - 1 < 0) ? centerHeight : heights[(q + 1) * GridRadius + r - 1];
+			const float eastNeightborHeight =     (q + 1 >= GridRadius) ? centerHeight : heights[(q + 1) * GridRadius + r];
+			const float southEastNeigborHeight =  (q + 1 >= GridRadius || r + 1 >= GridRadius) ? centerHeight : heights[q * GridRadius + r + 1];
+			const float southWestNeigborHeight =  (q - 1 <= 0 || r + 1 <= GridRadius) ? centerHeight : heights[(q - 1) * GridRadius + r + 1];
+			const float westNeightborHeight =     (q - 1 <= 0) ? centerHeight : heights[(q - 1) * GridRadius + r];
+			const float northWestNeighborHeight = (r - 1 < 0) ? centerHeight : heights[q * GridRadius + r - 1];
+			tile->AssignHeights(
+				centerHeight, 
+				northEastNeighborHeight, 
+				eastNeightborHeight,
+				southEastNeigborHeight, 
+				southWestNeigborHeight,
+				westNeightborHeight, 
+				northWestNeighborHeight);
+
 			tiles.Add(tile);
 		}
+
+		delete[] heights;
 	}
 }
 
