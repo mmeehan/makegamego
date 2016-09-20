@@ -7,7 +7,7 @@
 AHexTile::AHexTile(const class FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	//PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = true;
 
 	root = ObjectInitializer.CreateDefaultSubobject<USceneComponent>(this, TEXT("Root"));
 	mesh = ObjectInitializer.CreateDefaultSubobject<UCustomMeshComponent>(this, TEXT("Mesh"));
@@ -20,19 +20,14 @@ AHexTile::AHexTile(const class FObjectInitializer& ObjectInitializer)
 	FinishAndRegisterComponent(root);
 	FinishAndRegisterComponent(mesh);
 	FinishAndRegisterComponent(edgeMesh);
+	
+	mesh->SetRelativeScale3D(TileScale);
+	edgeMesh->SetRelativeScale3D(TileScale);
 }
 
 void AHexTile::BeginPlay()
 {
 	Super::BeginPlay();
-
-	TArray<FCustomMeshTriangle> triangles;
-	mesh->SetCustomMeshTriangles(triangles);
-	mesh->SetRelativeScale3D(TileScale);
-
-	TArray<FCustomMeshTriangle> edgeTriangles;
-	edgeMesh->SetCustomMeshTriangles(edgeTriangles);
-	edgeMesh->SetRelativeScale3D(TileScale);
 }
 
 void AHexTile::AddSideTriangles(TArray<FCustomMeshTriangle>& triangles, const FVector& corner1, const FVector& corner2)
@@ -85,12 +80,12 @@ void AHexTile::AssignHeights(
 	// Hardcoded math for a y-axis aligned regular hexagon's corners
 	const float xOffsetSides = FMath::Sqrt(3.f) * 0.5f;
 	const FVector Center(0, 0, centerHeight);
-	const FVector North(0, 1, (northEastNeighborHeight + northWestNeighborHeight) * 0.5f);
-	const FVector NorthEast(xOffsetSides, .5f, (northEastNeighborHeight + eastNeighborHeight) * 0.5f);
-	const FVector SouthEast(xOffsetSides, -.5f, (eastNeighborHeight + southEastNeighborHeight) * 0.5f);
-	const FVector South(0, -1, (southEastNeighborHeight + southWestNeighborHeight) * 0.5f);
-	const FVector SouthWest(-xOffsetSides, -.5f, (southWestNeighborHeight + westNeighborHeight) * 0.5f);
-	const FVector NorthWest(-xOffsetSides, .5f, (westNeighborHeight + northWestNeighborHeight) * 0.5f);
+	const FVector North(0, 1, (centerHeight + northEastNeighborHeight + northWestNeighborHeight) / 3.f);
+	const FVector NorthEast(xOffsetSides, .5f, (centerHeight + northEastNeighborHeight + eastNeighborHeight) / 3.f);
+	const FVector SouthEast(xOffsetSides, -.5f, (centerHeight + eastNeighborHeight + southEastNeighborHeight) / 3.f);
+	const FVector South(0, -1, (centerHeight + southEastNeighborHeight + southWestNeighborHeight) / 3.f);
+	const FVector SouthWest(-xOffsetSides, -.5f, (centerHeight + southWestNeighborHeight + westNeighborHeight) / 3.f);
+	const FVector NorthWest(-xOffsetSides, .5f, (centerHeight + westNeighborHeight + northWestNeighborHeight) / 3.f);
 
 	TArray<FCustomMeshTriangle> triangles;
 	triangles.Add(FCustomMeshTriangle{ Center, North, NorthEast });
@@ -99,7 +94,7 @@ void AHexTile::AssignHeights(
 	triangles.Add(FCustomMeshTriangle{ Center, South, SouthWest });
 	triangles.Add(FCustomMeshTriangle{ Center, SouthWest, NorthWest });
 	triangles.Add(FCustomMeshTriangle{ Center, NorthWest, North });
-	SubdivideTriangles(triangles);
+	//SubdivideTriangles(triangles);
 
 	mesh->SetCustomMeshTriangles(triangles);
 	mesh->SetRelativeScale3D(TileScale);

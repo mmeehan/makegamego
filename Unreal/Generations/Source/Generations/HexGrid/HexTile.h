@@ -15,6 +15,9 @@ public:
 
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintImplementableEvent, Category = Debug)
+	void AssignDebugText(const FString& text);
+
 	void AssignHeights(
 		const float centerHeight,
 		const float northEastNeighborHeight,
