@@ -18,21 +18,11 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = Debug)
 	void AssignDebugText(const FString& text);
 
-	void AssignHeights(
-		const float centerHeight,
-		const float northEastNeighborHeight,
-		const float eastNeighborHeight,
-		const float southEastNeighborHeight,
-		const float southWestNeighborHeight,
-		const float westNeighborHeight,
-		const float northWestNeighborHeight);
+	void AssignHeights(const struct FHexGridCoordinate& coord, const class HexGridHeightMap& heights);
 
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = Hexes)
 	class USceneComponent* root;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = Hexes)
-	class UCustomMeshComponent* mesh;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = Hexes)
 	class UCustomMeshComponent* edgeMesh;
@@ -40,8 +30,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = Hexes)
 	struct FVector TileScale;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = Hexes)
+	class UProceduralMeshComponent* proceduralMesh;
+
 private:
-	void AddSideTriangles(class TArray<struct FCustomMeshTriangle>& triangles, const FVector& corner1, const FVector& corner2);
 	void AddEdgeTriangles(class TArray<struct FCustomMeshTriangle>& triangles, const FVector& center, const FVector& corner1, const FVector& corner2);
-	void SubdivideTriangles(class TArray<struct FCustomMeshTriangle>& triangles);
 };

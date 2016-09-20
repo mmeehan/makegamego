@@ -3,6 +3,9 @@
 #include "Generations.h"
 #include "HexTile.h"
 #include "CustomMeshComponent.h"
+#include "ProceduralMeshComponent.h"
+#include "HexGridCoordinate.h"
+#include "HexGridHeightMap.h"
 
 AHexTile::AHexTile(const class FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -10,33 +13,24 @@ AHexTile::AHexTile(const class FObjectInitializer& ObjectInitializer)
 	PrimaryActorTick.bCanEverTick = true;
 
 	root = ObjectInitializer.CreateDefaultSubobject<USceneComponent>(this, TEXT("Root"));
-	mesh = ObjectInitializer.CreateDefaultSubobject<UCustomMeshComponent>(this, TEXT("Mesh"));
 	edgeMesh = ObjectInitializer.CreateDefaultSubobject<UCustomMeshComponent>(this, TEXT("EdgeMesh"));
+	proceduralMesh = ObjectInitializer.CreateDefaultSubobject<UProceduralMeshComponent>(this, TEXT("ProceduralMesh"));
 
 	RootComponent = root;
-	mesh->SetupAttachment(root);
 	edgeMesh->SetupAttachment(root);
+	proceduralMesh->SetupAttachment(root);
 
 	FinishAndRegisterComponent(root);
-	FinishAndRegisterComponent(mesh);
 	FinishAndRegisterComponent(edgeMesh);
+	FinishAndRegisterComponent(proceduralMesh);
 	
-	mesh->SetRelativeScale3D(TileScale);
 	edgeMesh->SetRelativeScale3D(TileScale);
+	proceduralMesh->SetRelativeScale3D(TileScale);
 }
 
 void AHexTile::BeginPlay()
 {
 	Super::BeginPlay();
-}
-
-void AHexTile::AddSideTriangles(TArray<FCustomMeshTriangle>& triangles, const FVector& corner1, const FVector& corner2)
-{
-	const FVector corner1Down = corner1 - FVector::UpVector;
-	const FVector corner2Down = corner2 - FVector::UpVector;
-
-	triangles.Add(FCustomMeshTriangle{ corner1Down, corner2, corner1 });
-	triangles.Add(FCustomMeshTriangle{ corner1Down, corner2Down, corner2 });
 }
 
 void AHexTile::AddEdgeTriangles(TArray<FCustomMeshTriangle>& triangles, const FVector& center, const FVector& corner1, const FVector& corner2)
@@ -53,30 +47,26 @@ void AHexTile::AddEdgeTriangles(TArray<FCustomMeshTriangle>& triangles, const FV
 	triangles.Add(FCustomMeshTriangle{ corner2In, corner1In, corner1Up });
 }
 
-void AHexTile::SubdivideTriangles(TArray<FCustomMeshTriangle>& triangles)
+FColor ComputeColorFromHeight(const HexGridHeightMap& heights, float height)
 {
-	const size_t originalLength = triangles.Num();
-	for (size_t index = 0; index < originalLength; index++)
-	{
-		FCustomMeshTriangle triangle = triangles[index];
-		const FVector center = (triangle.Vertex0 + triangle.Vertex1 + triangle.Vertex2) / 3.f;
-		triangles.Add(FCustomMeshTriangle{ center, triangle.Vertex0, triangle.Vertex1 });
-		triangles.Add(FCustomMeshTriangle{ center, triangle.Vertex1, triangle.Vertex2 });
-		triangles.Add(FCustomMeshTriangle{ center, triangle.Vertex2, triangle.Vertex0 });
-	}
-
-	triangles.RemoveAt(0, originalLength);
+	const float alpha = (height - heights.minHeight) / (heights.maxHeight - heights.minHeight);
+	const uint8 alphaByte = static_cast<uint8>(FMath::FloorToInt(alpha * 255));
+	UE_LOG(LogTemp, Log, TEXT("Height %f => %i"), height, alphaByte);
+	return FColor(alphaByte, alphaByte, alphaByte, alphaByte);
 }
 
 void AHexTile::AssignHeights(
-	const float centerHeight,
-	const float northEastNeighborHeight,
-	const float eastNeighborHeight,
-	const float southEastNeighborHeight,
-	const float southWestNeighborHeight,
-	const float westNeighborHeight,
-	const float northWestNeighborHeight)
+	const FHexGridCoordinate& coord,
+	const HexGridHeightMap& heights)
 {
+	const float centerHeight = heights.GetHeight(coord, 0.f);
+	const float northEastNeighborHeight = heights.GetHeight(coord.Northeast(), centerHeight);
+	const float eastNeighborHeight = heights.GetHeight(coord.East(), centerHeight);
+	const float southEastNeighborHeight = heights.GetHeight(coord.Southeast(), centerHeight);
+	const float southWestNeighborHeight = heights.GetHeight(coord.Southwest(), centerHeight);
+	const float westNeighborHeight = heights.GetHeight(coord.West(), centerHeight);
+	const float northWestNeighborHeight = heights.GetHeight(coord.Northwest(), centerHeight);
+
 	// Hardcoded math for a y-axis aligned regular hexagon's corners
 	const float xOffsetSides = FMath::Sqrt(3.f) * 0.5f;
 	const FVector Center(0, 0, centerHeight);
@@ -86,18 +76,6 @@ void AHexTile::AssignHeights(
 	const FVector South(0, -1, (centerHeight + southEastNeighborHeight + southWestNeighborHeight) / 3.f);
 	const FVector SouthWest(-xOffsetSides, -.5f, (centerHeight + southWestNeighborHeight + westNeighborHeight) / 3.f);
 	const FVector NorthWest(-xOffsetSides, .5f, (centerHeight + westNeighborHeight + northWestNeighborHeight) / 3.f);
-
-	TArray<FCustomMeshTriangle> triangles;
-	triangles.Add(FCustomMeshTriangle{ Center, North, NorthEast });
-	triangles.Add(FCustomMeshTriangle{ Center, NorthEast, SouthEast });
-	triangles.Add(FCustomMeshTriangle{ Center, SouthEast, South });
-	triangles.Add(FCustomMeshTriangle{ Center, South, SouthWest });
-	triangles.Add(FCustomMeshTriangle{ Center, SouthWest, NorthWest });
-	triangles.Add(FCustomMeshTriangle{ Center, NorthWest, North });
-	//SubdivideTriangles(triangles);
-
-	mesh->SetCustomMeshTriangles(triangles);
-	mesh->SetRelativeScale3D(TileScale);
 
 	TArray<FCustomMeshTriangle> edgeTriangles;
 	AddEdgeTriangles(edgeTriangles, Center, North, NorthEast);
@@ -109,4 +87,54 @@ void AHexTile::AssignHeights(
 
 	edgeMesh->SetCustomMeshTriangles(edgeTriangles);
 	edgeMesh->SetRelativeScale3D(TileScale);
+
+	TArray<FVector> vertices;
+	const int centerIndex = vertices.Add(Center);
+	const int northIndex = vertices.Add(North);
+	const int northeastIndex = vertices.Add(NorthEast);
+	const int southeastIndex = vertices.Add(SouthEast);
+	const int southIndex = vertices.Add(South);
+	const int southwestIndex = vertices.Add(SouthWest);
+	const int northwestIndex = vertices.Add(NorthWest);
+
+	TArray<int32> triangleIndices;
+	triangleIndices.Add(centerIndex);
+	triangleIndices.Add(northIndex);
+	triangleIndices.Add(northeastIndex);
+	triangleIndices.Add(centerIndex);
+	triangleIndices.Add(northeastIndex);
+	triangleIndices.Add(southeastIndex);
+	triangleIndices.Add(centerIndex);
+	triangleIndices.Add(southeastIndex);
+	triangleIndices.Add(southIndex);
+	triangleIndices.Add(centerIndex);
+	triangleIndices.Add(southIndex);
+	triangleIndices.Add(southwestIndex);
+	triangleIndices.Add(centerIndex);
+	triangleIndices.Add(southwestIndex);
+	triangleIndices.Add(northwestIndex);
+	triangleIndices.Add(centerIndex);
+	triangleIndices.Add(northwestIndex);
+	triangleIndices.Add(northIndex);
+
+	TArray<FVector> normals;
+	normals.Add(FVector::UpVector);
+	normals.Add(FVector::CrossProduct(Center - North, NorthEast - North));
+	normals.Add(FVector::CrossProduct(Center - NorthEast, SouthEast - NorthEast));
+	normals.Add(FVector::CrossProduct(Center - SouthEast, South - SouthEast));
+	normals.Add(FVector::CrossProduct(Center - South, SouthWest - South));
+	normals.Add(FVector::CrossProduct(Center - SouthWest, NorthWest - SouthWest));
+	normals.Add(FVector::CrossProduct(Center - NorthWest, North - NorthWest));
+
+	TArray<FColor> colors;
+	colors.Add(ComputeColorFromHeight(heights, centerHeight));
+	colors.Add(ComputeColorFromHeight(heights, North.Z));
+	colors.Add(ComputeColorFromHeight(heights, NorthEast.Z));
+	colors.Add(ComputeColorFromHeight(heights, SouthEast.Z));
+	colors.Add(ComputeColorFromHeight(heights, South.Z));
+	colors.Add(ComputeColorFromHeight(heights, SouthWest.Z));
+	colors.Add(ComputeColorFromHeight(heights, NorthWest.Z));
+
+	proceduralMesh->CreateMeshSection(0, vertices, triangleIndices, normals, TArray<FVector2D>(), colors, TArray<FProcMeshTangent>(), false);
+	proceduralMesh->SetRelativeScale3D(TileScale);
 }

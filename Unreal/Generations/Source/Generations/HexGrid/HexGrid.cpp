@@ -30,7 +30,7 @@ void AHexGrid::BeginPlay()
 	spawnParameters.Owner = this;
 
 	const float sqrtOfThree = FMath::Sqrt(3.f);
-	HexGridHeightMap heights(GridRadius, 0.6f, 1.2f);
+	HexGridHeightMap heights(GridRadius, 0.f, 1.5f);
 
 	for (int32 q = -GridRadius; q <= GridRadius; q++)
 	{
@@ -56,21 +56,7 @@ void AHexGrid::BeginPlay()
 				continue;
 			}
 
-			const float centerHeight = heights.GetHeight(coord, 0.f);
-			const float northEastNeighborHeight = heights.GetHeight(coord.Northeast(), centerHeight);
-			const float eastNeightborHeight = heights.GetHeight(coord.East(), centerHeight);
-			const float southEastNeigborHeight = heights.GetHeight(coord.Southeast(), centerHeight);
-			const float southWestNeigborHeight = heights.GetHeight(coord.Southwest(), centerHeight);
-			const float westNeightborHeight = heights.GetHeight(coord.West(), centerHeight);
-			const float northWestNeighborHeight = heights.GetHeight(coord.Northwest(), centerHeight);
-			tile->AssignHeights(
-				centerHeight, 
-				northEastNeighborHeight, 
-				eastNeightborHeight,
-				southEastNeigborHeight, 
-				southWestNeigborHeight,
-				westNeightborHeight, 
-				northWestNeighborHeight);
+			tile->AssignHeights(coord, heights);
 
 			tiles.Add(tile);
 

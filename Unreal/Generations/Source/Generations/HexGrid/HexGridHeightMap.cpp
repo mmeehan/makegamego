@@ -4,8 +4,8 @@
 #include "HexGridHeightMap.h"
 #include "HexGridCoordinate.h"
 
-HexGridHeightMap::HexGridHeightMap(int32 gridRadius, float minHeight, float maxHeight)
-	: radius(gridRadius)
+HexGridHeightMap::HexGridHeightMap(int32 gridRadius, float min, float max)
+	: radius(gridRadius), minHeight(min), maxHeight(max)
 {
 	int32 totalTiles = gridRadius * 2 + 1;
 	totalTiles *= totalTiles;
