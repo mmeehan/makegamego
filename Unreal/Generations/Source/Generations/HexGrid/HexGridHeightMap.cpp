@@ -24,16 +24,18 @@ HexGridHeightMap::~HexGridHeightMap()
 
 float HexGridHeightMap::GetHeight(const FHexGridCoordinate& coord, float heightIfOutOfBouds) const
 {
-	if (coord.q < -radius || coord.q > radius)
+	const int32 q = coord.Q();
+	if (q < -radius || q > radius)
 	{
 		return heightIfOutOfBouds;
 	}
 
-	if (coord.r < -radius || coord.r > radius)
+	const int32 r = coord.R();
+	if (r < -radius || r > radius)
 	{
 		return heightIfOutOfBouds;
 	}
 
 	int32 totalTiles = (radius * 2) + 1;
-	return heights[(coord.q + radius) * totalTiles + coord.r + radius];
+	return heights[(q + radius) * totalTiles + r + radius];
 }

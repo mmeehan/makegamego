@@ -3,13 +3,18 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
+#include "ProceduralMeshComponent.h"
+#include "HexGridCoordinate.h"
 #include "HexGrid.generated.h"
 
 UCLASS()
 class GENERATIONS_API AHexGrid : public AActor
 {
 	GENERATED_BODY()
-	
+
+private:
+	class TMap<FHexGridCoordinate, class AHexTile*> tiles;
+
 public:	
 	AHexGrid(const class FObjectInitializer& ObjectInitializer);
 
@@ -22,12 +27,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = Hexes)
 	int32 GridRadius;
 
-	UPROPERTY(EditDefaultsOnly, Category = Hexes)
-	struct FVector TileScale;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Hexes)
+	UMaterialInstance* GridMeshMaterial;
 
-	UPROPERTY(EditDefaultsOnly, Category = Hexes)
-	float TileSpacing;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = Hexes)
+	UMaterialInstance* EdgeMeshMaterial;
 
-private:
-	class TArray<class AHexTile*> tiles;
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = Hexes)
+	class UProceduralMeshComponent* EdgeMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = Hexes)
+	class UProceduralMeshComponent* GridMesh;
 };

@@ -3,6 +3,8 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
+#include "HexGridCoordinate.h"
+#include "HexNeighborDirection.h"
 #include "HexTile.generated.h"
 
 UCLASS()
@@ -10,6 +12,10 @@ class GENERATIONS_API AHexTile : public AActor
 {
 	GENERATED_BODY()
 	
+private:
+	FHexGridCoordinate coordinates;
+	TArray<TWeakObjectPtr<const AHexTile>> neighbors;
+
 public:	
 	AHexTile(const class FObjectInitializer& ObjectInitializer);
 
@@ -18,21 +24,17 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = Debug)
 	void AssignDebugText(const FString& text);
 
-	void AssignHeights(const struct FHexGridCoordinate& coord, const class HexGridHeightMap& heights);
+	void SetCoordinates(const FHexGridCoordinate& coord);
+	const FHexGridCoordinate GetCoordinates() const;
+
+	void SetNeighbor(const EHexNeighborDirection direction, const AHexTile& neighbor);
+	TWeakObjectPtr<const AHexTile> GetNeighbor(const EHexNeighborDirection direction) const;
+
+	void AddGridMeshGeometry(TArray<FVector>& vertices, TArray<int>& triangles, TArray<FVector>& normals, TArray<FColor>& colors) const;
+	void AddEdgeMeshGeometry(TArray<FVector>& vertices, TArray<int>& triangles, TArray<FVector>& normals) const;
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = Hexes)
-	class USceneComponent* root;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = Hexes)
-	class UCustomMeshComponent* edgeMesh;
-
-	UPROPERTY(EditDefaultsOnly, Category = Hexes)
-	struct FVector TileScale;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadonly, Category = Hexes)
-	class UProceduralMeshComponent* proceduralMesh;
-
+	
 private:
-	void AddEdgeTriangles(class TArray<struct FCustomMeshTriangle>& triangles, const FVector& center, const FVector& corner1, const FVector& corner2);
+	FVector GetNeighborCenterPosition(const EHexNeighborDirection direction) const;
 };
