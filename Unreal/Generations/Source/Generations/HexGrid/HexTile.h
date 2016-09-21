@@ -30,8 +30,8 @@ public:
 	void SetNeighbor(const EHexNeighborDirection direction, const AHexTile& neighbor);
 	TWeakObjectPtr<const AHexTile> GetNeighbor(const EHexNeighborDirection direction) const;
 
-	void AddGridMeshGeometry(TArray<FVector>& vertices, TArray<int>& triangles, TArray<FVector>& normals, TArray<FColor>& colors) const;
-	void AddEdgeMeshGeometry(TArray<FVector>& vertices, TArray<int>& triangles, TArray<FVector>& normals) const;
+	void AddGridMeshGeometry(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector>& normals, TArray<FColor>& colors) const;
+	void AddEdgeMeshGeometry(TArray<FVector>& vertices, TArray<int32>& triangles, TArray<FVector>& normals) const;
 
 protected:
 	
